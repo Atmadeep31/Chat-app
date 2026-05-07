@@ -1,14 +1,19 @@
 import { PrismaClient } from "@prisma/client";
+import { createAdapter } from "@socket.io/redis-adapter";
 import { createServer } from "http";
+import { Redis } from "ioredis";
 import { Server } from "socket.io";
 
 const prisma = new PrismaClient();
+const pubClient = new Redis(process.env.REDIS_URL!);
+const subClient = pubClient.duplicate();
 const httpServer = createServer();
 
 const io = new Server(httpServer,{
     cors: {
         origin: "http://localhost:3000",
     },
+    adapter: createAdapter(pubClient,subClient)
 });
 type ChatMessage = {
     user:string,
@@ -74,7 +79,11 @@ io.on("connection", (socket) => {
       
     });
   });
-  
-  httpServer.listen(3001, () => {
-    console.log("Socket.IO server running on http://localhost:3001");
+  const PORT = process.env.PORT || 3001
+  httpServer.listen(PORT, () => {
+    console.log(`Socket.IO server running on ${PORT}`);
   });
+
+  //Command to run different servers
+  // $env:PORT=3001; npx ts-node socket-server/server.ts
+  // $env:PORT=3002; npx ts-node socket-server/server.ts

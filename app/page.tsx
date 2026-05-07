@@ -53,8 +53,9 @@ export default function Page() {
     // setUsername(name);
 
     // Create socket connection
-    console.log("Connecting to socket at:", "http://localhost:3001")
-    socketRef.current = io("http://localhost:3001");
+    //console.log("Connecting to socket at:", "http://localhost:3001")
+    const serverPort = sessionStorage.getItem("serverPort") || "3001";
+    socketRef.current = io(`http://localhost:${serverPort}`);
     const socket = socketRef.current;
     //when socket connects to server
     socket.on("connect", () => {
